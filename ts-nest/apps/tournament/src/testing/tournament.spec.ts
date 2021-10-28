@@ -9,6 +9,8 @@ const exampleValidTournament = {
 
 const exampleInvalidTournament = {} as TournamentToAdd;
 
+let createdTournamentId: string;
+
 describe('/tournament endpoint', () => {
   let app: INestApplication;
 
@@ -33,6 +35,8 @@ describe('/tournament endpoint', () => {
         .expect(201);
 
       expect(body.id).not.toBeUndefined();
+
+      createdTournamentId = body.id;
     });
 
     it('should have stored the tournament', async () => {
@@ -49,11 +53,21 @@ describe('/tournament endpoint', () => {
     });
   });
 
-  // describe('[GET]: when fetching a tournamenet by ID', () => {
-  //   it('should return a 404 error', async (tournamentId) => {
-  //     const get = await request(app.getHttpServer()).get(`/api/tournament/`).expect(200);
+  describe('[GET]: when fetching a tournament by ID', () => {
+    it('should return a tournament with its ID', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get(`/api/tournaments/doesNotExists`)
+        .expect(404);
 
-  //     expect(get.)
-  //   });
-  // });
+      expect(body.message).toBe("Tournament doesn't exists");
+    });
+
+    it('should return a tournament with its ID', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get(`/api/tournaments/${createdTournamentId}`)
+        .expect(200);
+
+      expect(body.id).not.toBeUndefined();
+    });
+  });
 });
