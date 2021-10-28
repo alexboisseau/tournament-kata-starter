@@ -21,18 +21,19 @@ export class TournamentController {
   } {
     const { name } = tournamentToAdd;
 
+    if (!name) {
+      throw new HttpException(
+        'Tournament must have a name',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
     const tournament = {
       id: uuidv4(),
       name,
       phases: [],
       participants: [],
     };
-
-    if (!name)
-      throw new HttpException(
-        'Tournament must have a name',
-        HttpStatus.BAD_REQUEST
-      );
 
     this.tournamentRepository.saveTournament(tournament);
 
