@@ -42,6 +42,15 @@ export class TournamentController {
 
   @Get(':id')
   public getTournament(@Param('id') id: string): Tournament {
-    return this.tournamentRepository.getTournament(id);
+    const tournament = this.tournamentRepository.getTournament(id);
+
+    if (!tournament) {
+      throw new HttpException(
+        "Tournament doesn't exists",
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    return tournament;
   }
 }
