@@ -7,7 +7,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { Tournament, TournamentToAdd } from '../../api-model';
+import { Tournament, TournamentToAdd, Participant } from '../../api-model';
 import { v4 as uuidv4 } from 'uuid';
 import { TournamentRepositoryService } from '../../repositories/tournament-repository.service';
 
@@ -52,5 +52,38 @@ export class TournamentController {
     }
 
     return tournament;
+  }
+
+  @Post(':id/participants')
+  public createParticipant(@Param('id') id: string, @Body() participantToAdd: Participant): {
+    id: string;
+  } {
+
+    const tournament = this.tournamentRepository.getTournament(id)
+
+    if(!tournament) {      
+      throw new HttpException(
+        'Tournament doesn\'t exists',
+        HttpStatus.NOT_FOUND
+      )
+    }
+    const { name, elo } = participantToAdd;
+
+    if (!name || !elo) {
+      throw new HttpException(
+        'Participant must have a name and elo',
+        HttpStatus.BAD_REQUEST
+      );
+    } 
+
+    const participant = {
+      id: uuidv4(),
+      name,
+      elo,
+    };
+
+    this.tournamentRepository.saveParticipant(id, participant);
+
+    return { id: participant.id };
   }
 }
