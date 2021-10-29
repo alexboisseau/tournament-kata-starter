@@ -54,12 +54,20 @@ export class TournamentController {
     return tournament;
   }
 
-  @Post()
-  public createParticipant(@Body() participantToAdd: Participant): {
+  @Post(':id/participants')
+  public createParticipant(@Param('id') id: string, @Body() participantToAdd: Participant): {
     id: string;
   } {
-    const { name, elo } = participantToAdd;
 
+    const tournament = this.tournamentRepository.getTournament(id)
+
+    if(!tournament) {      
+      throw new HttpException(
+        'Tournament doesn\'t exists',
+        HttpStatus.NOT_FOUND
+      )
+    }
+    const { name, elo } = participantToAdd;
 
     if (!name || !elo) {
       throw new HttpException(
@@ -74,7 +82,7 @@ export class TournamentController {
       elo,
     };
 
-    this.tournamentRepository.saveParticipant(tournament.id, participant);
+    this.tournamentRepository.saveParticipant(id, participant);
 
     return { id: participant.id };
   }
