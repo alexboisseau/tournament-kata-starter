@@ -14,7 +14,6 @@ export class TournamentRepositoryService {
   }
 
   public saveParticipant(tournamentId: string, participant: Participant): void {
-    //this.tournaments.set(tournamentId, participant);
     const tournament = this.tournaments.get(tournamentId);
     tournament.participants.push(participant);
     this.tournaments.set(tournament.id, tournament);
