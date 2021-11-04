@@ -1,29 +1,22 @@
 import {
   Body,
   Controller,
-  Get,
-  Param,
   Post,
   HttpException,
   HttpStatus,
+  Get,
+  Param,
 } from '@nestjs/common';
-import { Tournament, TournamentToAdd } from '../../api-model';
-import { v4 as uuidv4 } from 'uuid';
-import { TournamentRepositoryService } from '../../repositories/tournament-repository.service';
 import { TournamentService } from './tournament.service';
+import { CreateTournamentDto } from './dto/create-tournament.dto';
 
 @Controller('tournaments')
 export class TournamentController {
-  constructor(
-    private tournamentRepository: TournamentRepositoryService,
-    private tournamentService: TournamentService
-  ) {}
+  constructor(private tournamentService: TournamentService) {}
 
   @Post()
-  public createTournament(@Body() tournamentToAdd: TournamentToAdd): {
-    id: string;
-  } {
-    const { name } = tournamentToAdd;
+  async createTournament(@Body() createTournamentDto: CreateTournamentDto) {
+    const { name } = createTournamentDto;
 
     if (!name) {
       throw new HttpException(
@@ -32,23 +25,22 @@ export class TournamentController {
       );
     }
 
-    const tournament = {
-      id: uuidv4(),
-      name,
-      phases: [],
-      participants: [],
-    };
+    const createdTournament = await this.tournamentService.create({ name });
 
-    this.tournamentRepository.saveTournament(tournament);
-
-    return { id: tournament.id };
+    return { id: createdTournament.id };
   }
 
   @Get(':id')
-  public getTournament(@Param('id') id: string): Tournament {
-    const tournament = this.tournamentRepository.getTournament(id);
-    this.tournamentService.throwIfNotExists(tournament);
+  async getTournament(@Param('id') id: string) {
+    const tournament = await this.tournamentService.find(id);
 
-    return tournament;
+    if (!tournament) {
+      throw new HttpException(
+        "Tournament doesn't exists",
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    return tournament.toObject({ getters: true });
   }
 }

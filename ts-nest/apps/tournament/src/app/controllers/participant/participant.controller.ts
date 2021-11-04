@@ -6,30 +6,31 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { Participant } from '../../api-model';
-import { v4 as uuidv4 } from 'uuid';
-import { TournamentRepositoryService } from '../../repositories/tournament-repository.service';
+import { ParticipantService } from './participant.service';
+import { CreateParticipantDto } from './dto/create-participant.dto';
 import { TournamentService } from '../tournament/tournament.service';
 
 @Controller('tournaments/:id/participants')
 export class ParticipantController {
   constructor(
-    private tournamentRepository: TournamentRepositoryService,
-    private tournamentService: TournamentService
+    private tournamentService: TournamentService,
+    private participantService: ParticipantService
   ) {}
-
   @Post()
-  public createParticipant(
+  async createParticipant(
     @Param('id') id: string,
-    @Body() participantToAdd: Participant
-  ): {
-    id: string;
-  } {
-    const tournament = this.tournamentRepository.getTournament(id);
-    this.tournamentService.throwIfNotExists(tournament);
+    @Body() createParticipantDto: CreateParticipantDto
+  ) {
+    const tournament = await this.tournamentService.find(id);
 
-    const { name, elo } = participantToAdd;
+    if (!tournament) {
+      throw new HttpException(
+        "Tournament doesn't exists",
+        HttpStatus.NOT_FOUND
+      );
+    }
 
+    const { name, elo } = createParticipantDto;
     if (!name || !elo) {
       throw new HttpException(
         'Participant must have a name and elo',
@@ -37,14 +38,16 @@ export class ParticipantController {
       );
     }
 
-    const participant = {
-      id: uuidv4(),
-      name,
-      elo,
-    };
+    const createdParticipant = await this.participantService.create(
+      tournament.id,
+      createParticipantDto
+    );
 
-    this.tournamentRepository.saveParticipant(id, participant);
+    await this.tournamentService.addParticipant(
+      tournament.id,
+      createdParticipant.id
+    );
 
-    return { id: participant.id };
+    return { id: createdParticipant.id };
   }
 }

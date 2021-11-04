@@ -1,19 +1,19 @@
-import { TournamentToAdd } from '../app/api-model';
-import { Participant } from '../app/api-model';
 import { INestApplication } from '@nestjs/common';
 import { startApp } from './test.utils';
 import * as request from 'supertest';
+import { CreateTournamentDto } from '../app/controllers/tournament/dto/create-tournament.dto';
+import { CreateParticipantDto } from '../app/controllers/participant/dto/create-participant.dto';
 
 const exampleValidTournament = {
   name: 'Unreal',
-} as TournamentToAdd;
-const exampleInvalidTournament = {} as TournamentToAdd;
+} as CreateTournamentDto;
+const exampleInvalidTournament = {} as CreateTournamentDto;
 
 const exampleValidParticipant = {
   name: 'Rocky',
   elo: 300,
-} as Participant;
-const exampleInvalidParticipant = {} as Participant;
+} as CreateParticipantDto;
+const exampleInvalidParticipant = {} as CreateParticipantDto;
 
 describe('/tournament endpoint', () => {
   let app: INestApplication;
@@ -26,7 +26,7 @@ describe('/tournament endpoint', () => {
     return request(app.getHttpServer()).get(`/api/tournaments/${tournamentId}`);
   };
 
-  const postTournament = (tournamentData: TournamentToAdd) => {
+  const postTournament = (tournamentData: CreateTournamentDto) => {
     return request(app.getHttpServer())
       .post('/api/tournaments')
       .send(tournamentData);
@@ -34,7 +34,7 @@ describe('/tournament endpoint', () => {
 
   const postParticipant = (
     tournamentId: string,
-    participantData: Participant
+    participantData: CreateParticipantDto
   ) => {
     return request(app.getHttpServer())
       .post(`/api/tournaments/${tournamentId}/participants`)
